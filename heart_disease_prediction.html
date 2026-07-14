@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardiac Risk Assessment</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --navy-950:#0b1a1e;
+    --navy-900:#12262c;
+    --navy-800:#1a3a3f;
+    --teal-600:#0f6e56;
+    --teal-500:#158066;
+    --teal-100:#dff1eb;
+    --coral-600:#b5432a;
+    --coral-500:#d85a30;
+    --coral-100:#fbe4dc;
+    --cream:#f6f3ec;
+    --cream-dim:#ece7db;
+    --paper:#fffdf8;
+    --ink:#1c2321;
+    --ink-dim:#5b645f;
+    --line:#d8d2c2;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+    padding:0 0 4rem;
+  }
+
+  .wrap{max-width:1120px; margin:0 auto; padding:0 2rem;}
+
+  header.top{
+    background:var(--navy-950);
+    color:var(--cream);
+    padding:3rem 0 3.5rem;
+    position:relative;
+    overflow:hidden;
+  }
+
+  header.top .wrap{position:relative; z-index:2;}
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--teal-500);
+    margin-bottom:0.9rem;
+  }
+
+  h1{
+    font-family:'Source Serif 4', serif;
+    font-weight:500;
+    font-size:2.6rem;
+    letter-spacing:-0.01em;
+    max-width:640px;
+    color:var(--paper);
+  }
+
+  header.top p.sub{
+    margin-top:1rem;
+    max-width:520px;
+    color:#b9c4bf;
+    font-size:15px;
+  }
+
+  .ecg-strip{
+    position:absolute;
+    top:0; right:0; bottom:0;
+    width:46%;
+    opacity:0.9;
+  }
+  .ecg-strip svg{width:100%; height:100%;}
+
+  main.layout{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:2.5rem;
+    margin-top:3rem;
+    align-items:start;
+  }
+
+  @media (max-width: 880px){
+    main.layout{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--paper);
+    border:0.5px solid var(--line);
+    border-radius:14px;
+    padding:1.75rem 2rem 2rem;
+  }
+
+  .section-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--teal-600);
+    margin:1.75rem 0 0.9rem;
+    padding-top:1.25rem;
+    border-top:0.5px solid var(--line);
+  }
+  .section-label:first-child{margin-top:0; padding-top:0; border-top:none;}
+
+  .field-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1rem 1.25rem;
+  }
+
+  .field{display:flex; flex-direction:column; gap:0.4rem;}
+  .field.full{grid-column:1 / -1;}
+
+  .field label{
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink);
+  }
+  .field .hint{
+    font-size:11.5px;
+    color:var(--ink-dim);
+    margin-top:-0.15rem;
+  }
+
+  input[type="number"], select{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+    padding:0.55rem 0.7rem;
+    border:0.5px solid var(--line);
+    border-radius:8px;
+    background:var(--cream);
+    color:var(--ink);
+    width:100%;
+  }
+  input[type="number"]:focus, select:focus{
+    outline:none;
+    border-color:var(--teal-500);
+    box-shadow:0 0 0 3px var(--teal-100);
+  }
+
+  .radio-row{
+    display:flex;
+    gap:0.5rem;
+    flex-wrap:wrap;
+  }
+  .radio-row label{
+    font-size:12.5px;
+    font-weight:400;
+    padding:0.45rem 0.75rem;
+    border:0.5px solid var(--line);
+    border-radius:20px;
+    cursor:pointer;
+    background:var(--cream);
+    display:flex;
+    align-items:center;
+    gap:0.4rem;
+    user-select:none;
+  }
+  .radio-row input{accent-color:var(--teal-600);}
+  .radio-row label.active{
+    background:var(--teal-100);
+    border-color:var(--teal-500);
+    color:var(--teal-600);
+    font-weight:500;
+  }
+
+  button#predict-btn{
+    margin-top:2rem;
+    width:100%;
+    background:var(--navy-950);
+    color:var(--paper);
+    border:none;
+    border-radius:9px;
+    padding:0.9rem 1rem;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14.5px;
+    font-weight:500;
+    letter-spacing:0.01em;
+    cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  button#predict-btn:hover{background:var(--teal-600);}
+  button#predict-btn:active{transform:scale(0.99);}
+
+  .result-panel{
+    position:sticky;
+    top:1.5rem;
+  }
+
+  .result-empty{
+    text-align:center;
+    padding:2.5rem 1rem;
+    color:var(--ink-dim);
+    font-size:14px;
+  }
+  .result-empty svg{width:64px; height:64px; margin:0 auto 1rem; display:block; opacity:0.35;}
+
+  .verdict{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:0.4rem;
+  }
+  .verdict-label{
+    font-family:'Source Serif 4', serif;
+    font-size:1.5rem;
+    font-weight:500;
+  }
+  .verdict-label.positive{color:var(--coral-600);}
+  .verdict-label.negative{color:var(--teal-600);}
+
+  .prob-readout{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:2.6rem;
+    font-weight:500;
+    margin:0.6rem 0 0.2rem;
+  }
+  .prob-readout.positive{color:var(--coral-600);}
+  .prob-readout.negative{color:var(--teal-600);}
+
+  .prob-bar-track{
+    height:8px;
+    border-radius:4px;
+    background:var(--cream-dim);
+    overflow:hidden;
+    margin:0.8rem 0 1.4rem;
+  }
+  .prob-bar-fill{
+    height:100%;
+    border-radius:4px;
+    transition:width 0.5s cubic-bezier(0.2,0.7,0.3,1);
+  }
+
+  .ecg-live{
+    height:70px;
+    margin:0.5rem 0 1.4rem;
+    border:0.5px solid var(--line);
+    border-radius:8px;
+    background:var(--navy-950);
+    overflow:hidden;
+  }
+  .ecg-live svg{width:100%; height:100%; display:block;}
+
+  .meta-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:12.5px;
+    color:var(--ink-dim);
+    padding:0.5rem 0;
+    border-top:0.5px solid var(--line);
+  }
+  .meta-row span:last-child{color:var(--ink); font-weight:500;}
+
+  .shap-title{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--teal-600);
+    margin:1.6rem 0 0.9rem;
+  }
+
+  .shap-row{
+    display:grid;
+    grid-template-columns:110px 1fr 46px;
+    align-items:center;
+    gap:0.6rem;
+    font-size:12px;
+    margin-bottom:0.5rem;
+  }
+  .shap-row .feat-name{
+    color:var(--ink-dim);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .shap-track{
+    position:relative;
+    height:14px;
+    background:var(--cream-dim);
+    border-radius:3px;
+  }
+  .shap-fill{
+    position:absolute;
+    top:0; bottom:0;
+    border-radius:3px;
+  }
+  .shap-val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-align:right;
+  }
+
+  .disclaimer{
+    margin-top:2.5rem;
+    padding-top:1.5rem;
+    border-top:0.5px solid var(--line);
+    font-size:12px;
+    color:var(--ink-dim);
+    max-width:640px;
+  }
+
+  footer{
+    margin-top:3rem;
+    text-align:center;
+    font-size:12px;
+    color:var(--ink-dim);
+    font-family:'IBM Plex Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="ecg-strip">
+    <svg viewBox="0 0 500 260" preserveAspectRatio="none">
+      <polyline points="0,140 40,140 55,140 65,90 75,190 85,60 95,220 105,140 130,140 160,138 175,138 190,95 200,185 210,65 220,215 230,138 260,138 290,140 305,140 315,92 325,188 335,62 345,218 355,140 380,140 410,138 425,138 440,95 450,185 460,65 470,215 480,138 500,138"
+        fill="none" stroke="#158066" stroke-width="2" opacity="0.55"/>
+    </svg>
+  </div>
+  <div class="wrap">
+    <div class="eyebrow">Clinical ML demonstration &mdash; not a diagnostic device</div>
+    <h1>Cardiac risk assessment</h1>
+    <p class="sub">A logistic regression model trained on the UCI Cleveland Heart Disease dataset (303 patients, 85.2% test accuracy, ROC&#8288;-&#8288;AUC 0.894). Enter a patient's clinical values to estimate disease likelihood.</p>
+  </div>
+</header>
+
+<div class="wrap">
+<main class="layout">
+
+  <section class="panel">
+    <div class="section-label">Demographics &amp; vitals</div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="age">Age (years)</label>
+        <input type="number" id="age" value="54" min="1" max="120">
+      </div>
+      <div class="field">
+        <label>Sex</label>
+        <div class="radio-row" data-group="sex">
+          <label class="active"><input type="radio" name="sex" value="1" checked> Male</label>
+          <label><input type="radio" name="sex" value="0"> Female</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="trestbps">Resting blood pressure</label>
+        <input type="number" id="trestbps" value="130" min="60" max="260">
+        <span class="hint">mm Hg, at hospital admission</span>
+      </div>
+      <div class="field">
+        <label for="chol">Serum cholesterol</label>
+        <input type="number" id="chol" value="245" min="80" max="700">
+        <span class="hint">mg/dl</span>
+      </div>
+      <div class="field">
+        <label for="thalach">Max heart rate achieved</label>
+        <input type="number" id="thalach" value="150" min="60" max="230">
+        <span class="hint">bpm, during exercise test</span>
+      </div>
+      <div class="field">
+        <label for="oldpeak">ST depression (oldpeak)</label>
+        <input type="number" id="oldpeak" value="1.0" step="0.1" min="0" max="7">
+        <span class="hint">induced by exercise, relative to rest</span>
+      </div>
+    </div>
+
+    <div class="section-label">Symptoms &amp; test results</div>
+    <div class="field-grid">
+      <div class="field full">
+        <label>Chest pain type</label>
+        <select id="cp">
+          <option value="0">Typical angina</option>
+          <option value="1">Atypical angina</option>
+          <option value="2" selected>Non-anginal pain</option>
+          <option value="3">Asymptomatic</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Fasting blood sugar &gt; 120 mg/dl</label>
+        <div class="radio-row" data-group="fbs">
+          <label class="active"><input type="radio" name="fbs" value="0" checked> No</label>
+          <label><input type="radio" name="fbs" value="1"> Yes</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Exercise-induced angina</label>
+        <div class="radio-row" data-group="exang">
+          <label class="active"><input type="radio" name="exang" value="0" checked> No</label>
+          <label><input type="radio" name="exang" value="1"> Yes</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Resting ECG result</label>
+        <select id="restecg">
+          <option value="0">Normal</option>
+          <option value="1" selected>ST-T wave abnormality</option>
+          <option value="2">Left ventricular hypertrophy</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>ST segment slope</label>
+        <select id="slope">
+          <option value="0">Upsloping</option>
+          <option value="1" selected>Flat</option>
+          <option value="2">Downsloping</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Major vessels colored (fluoroscopy)</label>
+        <select id="ca">
+          <option value="0" selected>0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>Thalassemia</label>
+        <select id="thal">
+          <option value="0">Unknown / not tested</option>
+          <option value="1">Normal</option>
+          <option value="2" selected>Fixed defect</option>
+          <option value="3">Reversible defect</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="predict-btn" onclick="runPrediction()">Assess risk</button>
+  </section>
+
+  <aside class="panel result-panel" id="result-panel">
+    <div class="result-empty" id="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-8-4.9-8-11a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6.1-8 11-8 11z"/></svg>
+      Fill in the patient's details and click <strong>Assess risk</strong> to see the model's prediction.
+    </div>
+
+    <div id="result-content" style="display:none;">
+      <div class="verdict">
+        <span class="verdict-label" id="verdict-label">&mdash;</span>
+      </div>
+      <div class="prob-readout" id="prob-readout">&mdash;</div>
+      <div class="prob-bar-track"><div class="prob-bar-fill" id="prob-bar-fill" style="width:0%"></div></div>
+
+      <div class="ecg-live"><svg id="ecg-live-svg" viewBox="0 0 400 70" preserveAspectRatio="none"></svg></div>
+
+      <div class="meta-row"><span>Model</span><span>Logistic Regression</span></div>
+      <div class="meta-row"><span>Test accuracy</span><span>85.2%</span></div>
+      <div class="meta-row"><span>Test ROC&#8288;-&#8288;AUC</span><span>0.894</span></div>
+
+      <div class="shap-title">Why &mdash; top contributing factors</div>
+      <div id="shap-list"></div>
+    </div>
+  </aside>
+
+</main>
+
+<p class="disclaimer">This tool reproduces a trained logistic regression model for demonstration purposes only. It is not a certified medical device and must never replace evaluation by a qualified healthcare provider. Predictions are estimates based on 303 historical patient records and carry meaningful uncertainty.</p>
+
+<footer>UCI Cleveland Heart Disease Dataset &middot; scikit-learn LogisticRegression (C=0.1, liblinear)</footer>
+</div>
+
+<script>
+// ---- Exact parameters extracted from the trained scikit-learn pipeline ----
+const NUMERIC_FEATURES = ["age","trestbps","chol","thalach","oldpeak"];
+const SCALER_MEAN = [54.3402489626556, 131.448132780083, 244.298755186722, 150.07053941908714, 1.0709543568464732];
+const SCALER_SCALE = [9.201321298105162, 17.951016991700257, 48.00624482313634, 22.04143597202839, 1.2037573963577533];
+
+// One-hot categories in the exact order scikit-learn's OneHotEncoder emits them
+const CAT_SPECS = [
+  {name:"sex", categories:[0,1]},
+  {name:"cp", categories:[0,1,2,3]},
+  {name:"fbs", categories:[0,1]},
+  {name:"restecg", categories:[0,1,2]},
+  {name:"exang", categories:[0,1]},
+  {name:"slope", categories:[0,1,2]},
+  {name:"ca", categories:[0,1,2,3,4]},
+  {name:"thal", categories:[0,1,2,3]}
+];
+
+const FEATURE_NAMES = [
+  "num__age","num__trestbps","num__chol","num__thalach","num__oldpeak",
+  "cat__sex_0","cat__sex_1",
+  "cat__cp_0","cat__cp_1","cat__cp_2","cat__cp_3",
+  "cat__fbs_0","cat__fbs_1",
+  "cat__restecg_0","cat__restecg_1","cat__restecg_2",
+  "cat__exang_0","cat__exang_1",
+  "cat__slope_0","cat__slope_1","cat__slope_2",
+  "cat__ca_0","cat__ca_1","cat__ca_2","cat__ca_3","cat__ca_4",
+  "cat__thal_0","cat__thal_1","cat__thal_2","cat__thal_3"
+];
+
+const READABLE_NAMES = {
+  "num__age":"Age","num__trestbps":"Resting BP","num__chol":"Cholesterol",
+  "num__thalach":"Max heart rate","num__oldpeak":"ST depression",
+  "cat__sex_0":"Sex: female","cat__sex_1":"Sex: male",
+  "cat__cp_0":"Chest pain: typical","cat__cp_1":"Chest pain: atypical",
+  "cat__cp_2":"Chest pain: non-anginal","cat__cp_3":"Chest pain: asymptomatic",
+  "cat__fbs_0":"Fasting sugar normal","cat__fbs_1":"Fasting sugar high",
+  "cat__restecg_0":"ECG: normal","cat__restecg_1":"ECG: ST-T abnormal","cat__restecg_2":"ECG: LV hypertrophy",
+  "cat__exang_0":"No exercise angina","cat__exang_1":"Exercise angina",
+  "cat__slope_0":"Slope: upsloping","cat__slope_1":"Slope: flat","cat__slope_2":"Slope: downsloping",
+  "cat__ca_0":"0 vessels colored","cat__ca_1":"1 vessel colored","cat__ca_2":"2 vessels colored",
+  "cat__ca_3":"3 vessels colored","cat__ca_4":"4 vessels colored",
+  "cat__thal_0":"Thal: unknown","cat__thal_1":"Thal: normal",
+  "cat__thal_2":"Thal: fixed defect","cat__thal_3":"Thal: reversible defect"
+};
+
+const COEF = [-0.008476245787730981,-0.1466737920173403,-0.2878280077042699,0.2985089973985297,-0.42403911043714115,0.3192843691253642,-0.3028443119503747,-0.6638067537605552,0.09672908078658318,0.37901322369731966,0.20450450645164273,0.011133049069981325,0.005307008105008179,-0.13047220067214294,0.16488735943876562,-0.017975101591632354,0.3101302597584294,-0.29369020258343964,0.019550397787758293,-0.22152150552782995,0.21841116491506213,0.548744956752619,-0.24843134051910865,-0.2492685836655531,-0.0890265602110165,0.05442158481805007,0.014328089704909189,-0.07882428938829254,0.5827548940245756,-0.5018186371662025];
+const INTERCEPT = 0.016440057174988445;
+
+function oneHot(value, categories){
+  return categories.map(c => (Number(value) === c ? 1 : 0));
+}
+
+function buildFeatureVector(patient){
+  const numericPart = NUMERIC_FEATURES.map((f,i) => (Number(patient[f]) - SCALER_MEAN[i]) / SCALER_SCALE[i]);
+  let catPart = [];
+  CAT_SPECS.forEach(spec => { catPart = catPart.concat(oneHot(patient[spec.name], spec.categories)); });
+  return numericPart.concat(catPart);
+}
+
+function sigmoid(z){ return 1 / (1 + Math.exp(-z)); }
+
+function predict(patient){
+  const x = buildFeatureVector(patient);
+  let z = INTERCEPT;
+  for(let i=0;i<x.length;i++) z += COEF[i]*x[i];
+  const proba = sigmoid(z);
+  const contributions = x.map((v,i) => ({name:FEATURE_NAMES[i], value: COEF[i]*v}));
+  contributions.sort((a,b) => Math.abs(b.value) - Math.abs(a.value));
+  return {proba, contributions: contributions.slice(0,6)};
+}
+
+// ---- Radio pill active-state styling ----
+document.querySelectorAll('.radio-row').forEach(row => {
+  row.querySelectorAll('input[type=radio]').forEach(input => {
+    input.addEventListener('change', () => {
+      row.querySelectorAll('label').forEach(l => l.classList.remove('active'));
+      input.closest('label').classList.add('active');
+    });
+  });
+});
+
+function gatherPatient(){
+  const getRadio = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
+  return {
+    age: document.getElementById('age').value,
+    trestbps: document.getElementById('trestbps').value,
+    chol: document.getElementById('chol').value,
+    thalach: document.getElementById('thalach').value,
+    oldpeak: document.getElementById('oldpeak').value,
+    sex: getRadio('sex'),
+    cp: document.getElementById('cp').value,
+    fbs: getRadio('fbs'),
+    restecg: document.getElementById('restecg').value,
+    exang: getRadio('exang'),
+    slope: document.getElementById('slope').value,
+    ca: document.getElementById('ca').value,
+    thal: document.getElementById('thal').value
+  };
+}
+
+function drawECG(svgEl, bpmFactor, color){
+  // bpmFactor 0..1 -> more erratic / faster beat as risk rises
+  const w=400, h=70, mid=35;
+  let pts = [];
+  let x = 0;
+  const beatWidth = 40 - bpmFactor*14;
+  while(x < w+beatWidth){
+    pts.push([x, mid]);
+    pts.push([x+beatWidth*0.32, mid]);
+    pts.push([x+beatWidth*0.40, mid - 6 - bpmFactor*4]);
+    pts.push([x+beatWidth*0.46, mid + (8 + bpmFactor*18)]);
+    pts.push([x+beatWidth*0.52, mid - (30 + bpmFactor*20)]);
+    pts.push([x+beatWidth*0.58, mid + (14 + bpmFactor*10)]);
+    pts.push([x+beatWidth*0.68, mid]);
+    x += beatWidth;
+  }
+  const pointStr = pts.map(p => p.join(',')).join(' ');
+  svgEl.innerHTML = `<polyline points="${pointStr}" fill="none" stroke="${color}" stroke-width="2"/>`;
+}
+
+function runPrediction(){
+  const patient = gatherPatient();
+  const {proba, contributions} = predict(patient);
+  const pct = Math.round(proba*1000)/10;
+  const isPositive = proba >= 0.5;
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('result-content').style.display = 'block';
+
+  const verdictLabel = document.getElementById('verdict-label');
+  verdictLabel.textContent = isPositive ? 'Elevated risk detected' : 'Low risk profile';
+  verdictLabel.className = 'verdict-label ' + (isPositive ? 'positive' : 'negative');
+
+  const probReadout = document.getElementById('prob-readout');
+  probReadout.textContent = pct + '%';
+  probReadout.className = 'prob-readout ' + (isPositive ? 'positive' : 'negative');
+
+  const fill = document.getElementById('prob-bar-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = isPositive ? 'var(--coral-500)' : 'var(--teal-500)';
+
+  const ecgColor = isPositive ? '#d85a30' : '#158066';
+  drawECG(document.getElementById('ecg-live-svg'), proba, ecgColor);
+
+  const shapList = document.getElementById('shap-list');
+  shapList.innerHTML = '';
+  const maxAbs = Math.max(...contributions.map(c => Math.abs(c.value)), 0.01);
+  contributions.forEach(c => {
+    const pctWidth = Math.abs(c.value)/maxAbs*100;
+    const isPos = c.value > 0;
+    const row = document.createElement('div');
+    row.className = 'shap-row';
+    row.innerHTML = `
+      <span class="feat-name">${READABLE_NAMES[c.name] || c.name}</span>
+      <span class="shap-track">
+        <span class="shap-fill" style="
+          width:${pctWidth/2}%;
+          ${isPos ? 'right:50%;' : 'left:50%;'}
+          background:${isPos ? '#d85a30' : '#158066'};
+        "></span>
+      </span>
+      <span class="shap-val" style="color:${isPos ? '#b5432a' : '#0f6e56'}">${c.value>0?'+':''}${c.value.toFixed(2)}</span>
+    `;
+    shapList.appendChild(row);
+  });
+
+  document.getElementById('result-panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+</script>
+</body>
+</html>

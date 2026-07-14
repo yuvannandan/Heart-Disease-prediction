@@ -11,6 +11,19 @@ The application provides an intuitive clinical-style interface where users can e
 
 ---
 
+HOME DASHBOARD 
+
+<img width="1897" height="918" alt="Screenshot 2026-07-14 084344" src="https://github.com/user-attachments/assets/0863b899-02b6-4f13-b837-04edc56d90a2" />
+
+
+RESULT PAGE
+
+<img width="1880" height="905" alt="Screenshot 2026-07-14 084410" src="https://github.com/user-attachments/assets/77887250-4ccd-455c-aa93-7d4f045aa345" />
+
+
+
+
+
 ✨ Features
 
 - Modern healthcare-inspired user interface
